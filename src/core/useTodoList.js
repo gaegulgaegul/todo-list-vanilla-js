@@ -15,39 +15,23 @@ const useTodoList = () => {
         if (JSON.stringify(newState) === JSON.stringify(todos)) return;
         todos = newState;
         localStorage.setItem('todo', JSON.stringify(newState));
-        renderTodo();
+        render();
     };
     /**
      * to-do 정보 변경 시 html 랜더링
      */
-    const renderTodo = () => {
+    const render = () => {
         const todoItems = document.querySelector('.todo-items');
         while (todoItems.hasChildNodes()) {
             todoItems.removeChild(todoItems.firstChild);
         }
-        todos.forEach(item => todoItems.appendChild(Todo(item)));
-    };
+        todos.filter(item => !item.finish).forEach(item => todoItems.appendChild(Todo(item)));
 
-    /**
-     * 완료된 to-do 정보 상태 관리
-     * @type {*[]}
-     */
-    let completes = [];
-    const setCompletes = (newState) => {
-        if (JSON.stringify(newState) === JSON.stringify(completes)) return;
-        completes = newState;
-        localStorage.setItem('complete', JSON.stringify(newState));
-        renderComplete();
-    };
-    /**
-     * 완료된 to-do 정보 변경 시 html 랜더링
-     */
-    const renderComplete = () => {
         const completeItems = document.querySelector('.complete-items');
         while (completeItems.hasChildNodes()) {
             completeItems.removeChild(completeItems.firstChild);
         }
-        completes.forEach(item => completeItems.appendChild(Complete(item)));
+        todos.filter(item => item.finish).forEach(item => completeItems.appendChild(Complete(item)));
     };
 
     /**
@@ -56,8 +40,6 @@ const useTodoList = () => {
     const initTodoList = () => {
         const todo =  localStorage.getItem('todo');
         if (todo) setTodos(JSON.parse(todo));
-        const complete =  localStorage.getItem('complete');
-        if (complete) setCompletes(JSON.parse(complete));
     }
 
     /**
@@ -66,41 +48,26 @@ const useTodoList = () => {
      */
     const addTodo = (text) => {
         if (!text) return;
-        setTodos([...todos, {id: new Date().toISOString(), text}]);
-        console.log("todos [] => ", todos)
+        setTodos([...todos, { id: new Date().toISOString(), text, finish: false }]);
     };
 
     /**
      * 완료된 to-do 데이터 전달
      * @param id
      */
-    const completeTodo = (id) => {
-        const doneTodo = todos.find(item => item.id === id);
-        setTodos(todos.filter(item => item.id !== id));
-        setCompletes([...completes, doneTodo]);
-    };
+    const completeTodo = (id) => setTodos(todos.map(item => item.id === id ? ({ ...item, finish: true }) : item));
 
     /**
      * 다시 수행하는 to-do 데이터 전달
      * @param id
      */
-    const replayTodo = (id) => {
-        const replayTodo = completes.find(item => item.id === id);
-        setCompletes(completes.filter(item => item.id !== id));
-        setTodos([...todos, replayTodo]);
-    };
+    const replayTodo = (id) => setTodos(todos.map(item => item.id === id ? ({ ...item, finish: false }) : item));;
 
     /**
      * to-do 삭제
      * @param id
      */
-    const removeTodo = (id) => {
-        if (todos.some(item => item.id === id)) {
-            setTodos(todos.filter(item => item.id !== id));
-            return;
-        }
-        setCompletes(completes.filter(item => item.id !== id));
-    };
+    const removeTodo = (id) => setTodos(todos.filter(item => item.id !== id));
 
     return {
         initTodoList,

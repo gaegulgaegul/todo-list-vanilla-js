@@ -1,6 +1,11 @@
 import {Task} from "./Task.js";
 import {ListArea} from "./ListArea.js";
 
+/**
+ * to-do list container HTML Element
+ * @returns {string}
+ * @constructor
+ */
 const TodoList = () => {
     return `
         <div class="container">
